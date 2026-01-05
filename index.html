@@ -1,0 +1,589 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="个人网址导航">
+    <meta name="keywords" content="导航,网址导航,书签">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <title>我的专属网址导航</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        html, body {
+            background: #f8f9fa;
+            height: 100%;
+        }
+        
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            color: #4361ee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        #searchBox {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            -webkit-appearance: none;
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 15px;
+            background: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            outline: none;
+        }
+        
+        .categories {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            width: 100%;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4361ee;
+            color: #4361ee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .links-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .link-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 12px;
+            border-radius: 10px;
+            border-left: 4px solid #4361ee;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s ease;
+            width: 100%;
+            min-height: 70px;
+        }
+        
+        .link-item:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.12);
+            background: #f1f3ff;
+        }
+        
+        .link-icon {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #4361ee;
+            min-width: 30px;
+            flex-shrink: 0;
+        }
+        
+        .link-text {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .link-text strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .link-url {
+            font-size: 11px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #888;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+            display: none;
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 480px) {
+            .links-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+            
+            .link-item {
+                padding: 12px 10px;
+            }
+            
+            body {
+                padding: 12px;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .links-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .links-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .category-card,
+        body.dark-mode .link-item {
+            background-color: #2d2d2d;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .link-url {
+            color: #aaa;
+        }
+        
+        body.dark-mode #searchBox {
+            background-color: #2d2d2d;
+            border-color: #404040;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .btn {
+            background-color: #3a56d4;
+        }
+        
+        .link-item {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-compass"></i> 我的专属导航</h1>
+        <div class="controls">
+            <input type="text" id="searchBox" placeholder="🔍 搜索链接名称或描述..." autocomplete="off">
+            <button class="btn" id="themeToggle"><i class="fas fa-moon"></i> 夜间</button>
+            <button class="btn" id="addBtn"><i class="fas fa-plus"></i> 添加</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="categories" id="categoriesContainer">
+            <div class="category-card">
+                <h2 class="category-title"><i class="fas fa-seedling"></i> 自续农业论坛新闻</h2>
+                <div class="links-container" id="linksContainer">
+                    <!-- 链接将通过JavaScript动态生成 -->
+                </div>
+                <div class="no-results" id="noResults">没有找到匹配的链接</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>共收录 <span id="totalCount">0</span> 个链接 • 最后更新 <span id="updateDate">2024年</span></p>
+        <p>这是一个静态页面，所有数据保存在本地HTML文件中。</p>
+    </footer>
+
+    <script>
+        // 链接数据 - 根据您提供的链接转换
+        const linksData = [
+            { name: "网易", url: "https://www.163.com/dy/article/KI7BP0VF0552EVJ6.html?referFrom=", icon: "fas fa-newspaper", search: "网易 新闻 农业 论坛 徐州" },
+            { name: "搜狐网", url: "https://www.sohu.com/a/971413264_114577", icon: "fas fa-newspaper", search: "搜狐网 新闻 农业 论坛 徐州" },
+            { name: "知乎网", url: "https://zhuanlan.zhihu.com/p/1989838854023291224", icon: "fab fa-zhihu", search: "知乎网 专栏 农业 论坛 徐州" },
+            { name: "脉脉", url: "https://maimai.cn/article/detail?fid=1898462577&efid=Fz0J4WfdmGe9XYp841nBvg", icon: "fas fa-briefcase", search: "脉脉 职场 资讯 农业 徐州" },
+            { name: "百度百家", url: "https://baijiahao.baidu.com/s?id=1853038119961377932", icon: "fab fa-baidu", search: "百度百家 百家号 新闻 农业" },
+            { name: "图书馆", url: "http://www.360doc.com/showweb/0/0/1167661706.aspx", icon: "fas fa-book", search: "图书馆 360doc 文档 农业" },
+            { name: "东方财富", url: "https://caifuhao.eastmoney.com/news/20251231232653776833850", icon: "fas fa-chart-line", search: "东方财富网 财经 资讯 农业 产业" },
+            { name: "京新资讯", url: "http://www.bjxxgang.cn/xinwen/516024.html", icon: "fas fa-globe-asia", search: "京新资讯 北京 新闻 农业" },
+            { name: "深圳观察", url: "http://www.szrxwz.cn/xinwen/516025.html", icon: "fas fa-globe-asia", search: "深圳观察 深圳 新闻 农业" },
+            { name: "今日深圳", url: "http://www.szxwnet.cn/xinwen/516026.html", icon: "fas fa-globe-asia", search: "今日深圳 深圳 新闻 农业" },
+            { name: "广东快讯", url: "http://www.020gdw.cn/xinwen/516027.html", icon: "fas fa-globe-asia", search: "广东快讯 广东 新闻 农业" },
+            { name: "香港之声", url: "http://www.hkfly.cn/xinwen/516028.html", icon: "fas fa-globe-asia", search: "香港之声 香港 新闻 农业" },
+            { name: "内蒙古之窗", url: "http://www.nmxwzx.cn/xinwen/516029.html", icon: "fas fa-globe-asia", search: "内蒙古之窗 内蒙古 新闻 农业" },
+            { name: "广东羊城网", url: "http://www.gdycnet.cn/xinwen/516030.html", icon: "fas fa-globe-asia", search: "广东羊城网 广东 新闻 农业" },
+            { name: "武汉时讯", url: "http://www.whxws.cn/xinwen/516031.html", icon: "fas fa-globe-asia", search: "武汉时讯 武汉 新闻 农业" },
+            { name: "中教在线", url: "http://www.jyxwzx.cn/xinwen/516032.html", icon: "fas fa-graduation-cap", search: "中教在线 教育 新闻 农业" },
+            { name: "科技之声", url: "http://www.it-news.top/xinwen/516033.html", icon: "fas fa-microchip", search: "科技之声 科技 新闻 农业" },
+            { name: "每日科技网", url: "http://www.mritinfo.cn/xinwen/516034.html", icon: "fas fa-microchip", search: "每日科技网 科技 新闻 农业" },
+            { name: "中财网", url: "http://www.zhongcaishe.cn/xinwen/516035.html", icon: "fas fa-chart-line", search: "中财网 财经 新闻 农业" },
+            { name: "上海城市网", url: "http://www.shcszx.cn/xinwen/516036.html", icon: "fas fa-globe-asia", search: "上海城市网 上海 新闻 农业" },
+            { name: "新深网", url: "http://www.szxwwz.cn/xinwen/516037.html", icon: "fas fa-globe-asia", search: "新深网 深圳 新闻 农业" },
+            { name: "健康观察", url: "http://www.hi-healthy.cn/xinwen/516038.html", icon: "fas fa-heartbeat", search: "健康观察 健康 新闻 农业" },
+            { name: "商业播报", url: "http://www.yschinaw.cn/xinwen/516039.html", icon: "fas fa-bullhorn", search: "商业播报 商业 新闻 农业" },
+            { name: "医生在线", url: "http://www.chinayszx.cn/xinwen/516040.html", icon: "fas fa-user-md", search: "医生在线 医疗 健康 新闻" },
+            { name: "IT新闻网", url: "http://www.itchinaw.cn/xinwen/516041.html", icon: "fas fa-microchip", search: "IT新闻网 科技 新闻 农业" },
+            { name: "中商资讯", url: "http://www.cjzxnews.cn/xinwen/516042.html", icon: "fas fa-bullhorn", search: "中商资讯 商业 新闻 农业" },
+            { name: "全球财经", url: "http://www.qqcjxw.cn/xinwen/516043.html", icon: "fas fa-chart-line", search: "全球财经 财经 新闻 农业" },
+            { name: "财经视野", url: "http://www.cjhxs.cn/xinwen/516044.html", icon: "fas fa-chart-line", search: "财经视野 财经 新闻 农业" },
+            { name: "好学社", url: "http://www.haoxueshe.cn/xinwen/516045.html", icon: "fas fa-graduation-cap", search: "好学社 教育 新闻 农业" },
+            { name: "学堂教育", url: "http://www.xuetangchina.cn/xinwen/516046.html", icon: "fas fa-graduation-cap", search: "学堂教育 教育 新闻 农业" },
+            { name: "中政在线", url: "http://www.eduhx.cn/xinwen/516047.html", icon: "fas fa-graduation-cap", search: "中政在线 教育 新闻 农业" },
+            { name: "中网资讯", url: "http://www.pxjgw.cn/xinwen/516048.html", icon: "fas fa-globe", search: "中网资讯 综合 新闻 农业" },
+            { name: "时尚中国", url: "http://www.zgvogue.cn/xinwen/516049.html", icon: "fas fa-tshirt", search: "时尚中国 时尚 新闻 农业" },
+            { name: "自由潮流", url: "http://www.style-free.cn/xinwen/516050.html", icon: "fas fa-tshirt", search: "自由潮流 时尚 新闻 农业" },
+            { name: "时尚社", url: "http://www.fashionshe.cn/xinwen/516051.html", icon: "fas fa-tshirt", search: "时尚社 时尚 新闻 农业" },
+            { name: "娱乐消遣网", url: "http://www.chinapastime.cn/xinwen/516052.html", icon: "fas fa-gamepad", search: "娱乐消遣网 娱乐 新闻 农业" },
+            { name: "新新娱乐", url: "http://www.xyule.cn/xinwen/516053.html", icon: "fas fa-gamepad", search: "新新娱乐 娱乐 新闻 农业" },
+            { name: "中国旅行者", url: "http://www.touristchina.cn/xinwen/516054.html", icon: "fas fa-plane", search: "中国旅行者 旅游 新闻 农业" },
+            { name: "中国旅途网", url: "http://www.rzltw.cn/xinwen/516055.html", icon: "fas fa-plane", search: "中国旅途网 旅游 新闻 农业" },
+            { name: "霓裳中国", url: "http://www.chinaclothes.cn/xinwen/516056.html", icon: "fas fa-tshirt", search: "霓裳中国 时尚 服饰 新闻" },
+            { name: "城市之声", url: "http://www.west-time.cn/xinwen/516057.html", icon: "fas fa-city", search: "城市之声 城市 新闻 农业" },
+            { name: "北疆网", url: "http://www.beijinag.cn/xinwen/516058.html", icon: "fas fa-globe-asia", search: "北疆网 新疆 新闻 农业" },
+            { name: "北京焦点网", url: "http://www.bjjdwz.cn/xinwen/516059.html", icon: "fas fa-globe-asia", search: "北京焦点网 北京 新闻 农业" },
+            { name: "中文时讯", url: "http://www.mzxwzx.cn/xinwen/516060.html", icon: "fas fa-newspaper", search: "中文时讯 综合 新闻 农业" },
+            { name: "广州在线", url: "http://www.gzxxzx.cn/xinwen/516061.html", icon: "fas fa-globe-asia", search: "广州在线 广州 新闻 农业" },
+            { name: "广州之窗", url: "http://www.gzwindows.cn/xinwen/516062.html", icon: "fas fa-globe-asia", search: "广州之窗 广州 新闻 农业" },
+            { name: "广州城市网", url: "http://www.citygz.cn/xinwen/516063.html", icon: "fas fa-globe-asia", search: "广州城市网 广州 新闻 农业" },
+            { name: "广东都市网", url: "http://www.gddsxw.cn/xinwen/516064.html", icon: "fas fa-globe-asia", search: "广东都市网 广东 新闻 农业" },
+            { name: "中企商业", url: "http://www.onlinegf.cn/xinwen/516065.html", icon: "fas fa-briefcase", search: "中企商业 商业 新闻 农业" },
+            { name: "深圳龙网", url: "http://www.0755sznews.cn/xinwen/516066.html", icon: "fas fa-globe-asia", search: "深圳龙网 深圳 新闻 农业" },
+            { name: "中医药健康网", url: "http://www.zyyhealth.cn/xinwen/516067.html", icon: "fas fa-heartbeat", search: "中医药健康网 健康 医疗 新闻" },
+            { name: "中信资讯网", url: "http://www.life-world.cn/xinwen/516068.html", icon: "fas fa-newspaper", search: "中信资讯网 综合 新闻 农业" },
+            { name: "华北时讯", url: "http://www.companyeast.cn/xinwen/516069.html", icon: "fas fa-globe-asia", search: "华北时讯 华北 新闻 农业" },
+            { name: "浙江网", url: "http://www.zgzjxw.cn/xinwen/516070.html", icon: "fas fa-globe-asia", search: "浙江网 浙江 新闻 农业" },
+            { name: "杭州视窗", url: "http://www.windowhz.cn/xinwen/516071.html", icon: "fas fa-globe-asia", search: "杭州视窗 杭州 新闻 农业" },
+            { name: "温州在线", url: "http://www.onlinewz.cn/xinwen/516072.html", icon: "fas fa-globe-asia", search: "温州在线 温州 新闻 农业" },
+            { name: "宁波视窗", url: "http://www.nbwindow.cn/xinwen/516073.html", icon: "fas fa-globe-asia", search: "宁波视窗 宁波 新闻 农业" },
+            { name: "山西之窗", url: "http://www.sxxwz.cn/xinwen/516074.html", icon: "fas fa-globe-asia", search: "山西之窗 山西 新闻 农业" },
+            { name: "采闻观察", url: "http://www.tyxwrx.cn/xinwen/516075.html", icon: "fas fa-globe-asia", search: "采闻观察 山西 太原 新闻" },
+            { name: "齐鲁之声", url: "http://www.qlcity.cn/xinwen/516076.html", icon: "fas fa-globe-asia", search: "齐鲁之声 山东 新闻 农业" },
+            { name: "山东网", url: "http://www.xsdwww.cn/xinwen/516077.html", icon: "fas fa-globe-asia", search: "山东网 山东 新闻 农业" },
+            { name: "联展资讯", url: "http://www.qdwindow.cn/xinwen/516078.html", icon: "fas fa-globe-asia", search: "联展资讯 山东 青岛 新闻" },
+            { name: "鲁闻网", url: "http://www.chinalww.cn/xinwen/516079.html", icon: "fas fa-globe-asia", search: "鲁闻网 山东 新闻 农业" },
+            { name: "中华联展网", url: "http://www.carbeyond.cn/xinwen/516080.html", icon: "fas fa-car", search: "中华联展网 汽车 商业 新闻" },
+            { name: "播报online", url: "http://www.online-car.cn/xinwen/516081.html", icon: "fas fa-car", search: "播报online 汽车 新闻 农业" },
+            { name: "黑龙江网", url: "http://www.hljdsxw.cn/xinwen/516082.html", icon: "fas fa-globe-asia", search: "黑龙江网 黑龙江 新闻 农业" },
+            { name: "黑龙江信息港", url: "http://www.hljdxxg.cn/xinwen/516083.html", icon: "fas fa-globe-asia", search: "黑龙江信息港 黑龙江 新闻 农业" },
+            { name: "黑龙江之窗", url: "http://www.hljdzcw.cn/xinwen/516084.html", icon: "fas fa-globe-asia", search: "黑龙江之窗 黑龙江 新闻 农业" },
+            { name: "中国商务报道网", url: "http://www.mzcbu.top/a/news/xinwen/2026/0102/35599.html", icon: "fas fa-briefcase", search: "中国商务报道网 商业 新闻 农业" },
+            { name: "生活焦点网", url: "http://jiaodian.shenghuowang.top/news/xinwen/2026/0102/35967.html", icon: "fas fa-home", search: "生活焦点网 生活 新闻 农业" },
+            { name: "天天资讯网", url: "http://tt.zixunw.top/a/news/xinwen/2026/0102/36029.html", icon: "fas fa-newspaper", search: "天天资讯网 综合 新闻 农业" },
+            { name: "中国焦点资讯网", url: "http://jiaodian.newxww.com/a/news/xinwen/2026/0102/33067.html", icon: "fas fa-bullseye", search: "中国焦点资讯网 综合 新闻 农业" },
+            { name: "中国生活资讯网", url: "http://shenghuo.zixunw.top/news/xinwen/2026/0102/36019.html", icon: "fas fa-home", search: "中国生活资讯网 生活 新闻 农业" },
+            { name: "中国商业报道", url: "http://www.shangyequan.top/a/news/xinwen/2026/0102/35696.html", icon: "fas fa-briefcase", search: "中国商业报道 商业 新闻 农业" },
+            { name: "家居生活网", url: "http://www.jjxww.top/a/news/xinwen/2026/0102/35546.html", icon: "fas fa-couch", search: "家居生活网 家居 生活 新闻" },
+            { name: "中国媒体网", url: "http://www.sdxvv.top/a/news/xinwen/2026/0102/35864.html", icon: "fas fa-tv", search: "中国媒体网 媒体 新闻 农业" },
+            { name: "汽车快报网", url: "http://www.rscvx.top/a/news/xinwen/2026/0102/35141.html", icon: "fas fa-car", search: "汽车快报网 汽车 新闻 农业" },
+            { name: "亲子圈", url: "http://www.qinziquan.top/a/news/xinwen/2026/0102/35165.html", icon: "fas fa-baby", search: "亲子圈 亲子 生活 新闻" },
+            { name: "家有宝贝网", url: "http://www.rtyut.top/a/news/xinwen/2026/0102/35621.html", icon: "fas fa-home", search: "家有宝贝网 亲子 家庭 新闻" },
+            { name: "中国科技头条", url: "http://www.zgkjtt.zxxnews.com/a/news/xinwen/2026/0102/35746.html", icon: "fas fa-microchip", search: "中国科技头条 科技 新闻 农业" },
+            { name: "中华教育信息网", url: "http://www.jiaoyucom.top/a/news/xinwen/2026/0102/34648.html", icon: "fas fa-graduation-cap", search: "中华教育信息网 教育 新闻 农业" },
+            { name: "中国科技在线", url: "http://it.mvcn.top/a/news/xinwen/2026/0102/35601.html", icon: "fas fa-microchip", search: "中国科技在线 科技 新闻 农业" },
+            { name: "城市建设网", url: "http://www.sxxwe.top/a/news/xinwen/2026/0102/34634.html", icon: "fas fa-city", search: "城市建设网 城市 建设 新闻" },
+            { name: "中国科技资讯圈", url: "http://www.chkj.zxxnews.com/a/news/xinwen/2026/0102/35071.html", icon: "fas fa-microchip", search: "中国科技资讯圈 科技 资讯 新闻" },
+            { name: "第一产经网", url: "http://www.zcgv.top/a/news/xinwen/2026/0102/33952.html", icon: "fas fa-chart-line", search: "第一产经网 产经 财经 新闻" },
+            { name: "中国企业网", url: "http://qiye.newxww.com/a/news/xinwen/2026/0102/35106.html", icon: "fas fa-building", search: "中国企业网 企业 商业 新闻" },
+            { name: "中国金融网", url: "http://www.jinrongwang.top/a/news/xinwen/2026/0102/34034.html", icon: "fas fa-money-check-alt", search: "中国金融网 金融 财经 新闻" },
+            { name: "今日资讯网", url: "http://www.zixunw.top/news/xinwen/2026/0102/34284.html", icon: "fas fa-newspaper", search: "今日资讯网 综合 新闻 农业" },
+            { name: "健康信息网", url: "http://www.jiankangw.top/news/xinwen/2026/0102/36111.html", icon: "fas fa-heartbeat", search: "健康信息网 健康 医疗 新闻" },
+            { name: "健康医疗网", url: "http://www.jkfxw.top/news/xinwen/2026/0102/36272.html", icon: "fas fa-heartbeat", search: "健康医疗网 健康 医疗 新闻" },
+            { name: "健康专栏网", url: "http://zhuanlan.jkw.news/news/xinwen/2026/0102/36963.html", icon: "fas fa-heartbeat", search: "健康专栏网 健康 专栏 新闻" },
+            { name: "美白网", url: "http://www.meibaiwang.top/a/news/xinwen/2026/0102/33718.html", icon: "fas fa-spa", search: "美白网 美容 健康 新闻" },
+            { name: "汽车热讯", url: "http://qiche.zixunnews.top/a/news/xinwen/2026/0102/34287.html", icon: "fas fa-car", search: "汽车热讯 汽车 新闻 农业" },
+            { name: "家居信息网", url: "http://www.jiajujianxun.top/a/news/xinwen/2026/0102/33323.html", icon: "fas fa-couch", search: "家居信息网 家居 资讯 新闻" },
+            { name: "中国教育", url: "http://www.eduwang.top/a/news/xinwen/2026/0102/34610.html", icon: "fas fa-graduation-cap", search: "中国教育 教育 新闻 农业" },
+            { name: "中国家居网", url: "http://jiaju.newxww.com/a/news/xinwen/2026/0102/36197.html", icon: "fas fa-couch", search: "中国家居网 家居 新闻 农业" },
+            { name: "家居资讯网", url: "http://zixun.jjxww.top/a/news/xinwen/2026/0102/33358.html", icon: "fas fa-couch", search: "家居资讯网 家居 资讯 新闻" },
+            { name: "河北生活网", url: "http://hebei.cxwnet.cc/a/news/xinwen/2026/0102/34530.html", icon: "fas fa-globe-asia", search: "河北生活网 河北 生活 新闻" },
+            { name: "山西新闻网", url: "http://shanxi.cxwnet.cc/a/news/xinwen/2026/0102/34106.html", icon: "fas fa-globe-asia", search: "山西新闻网 山西 新闻 农业" },
+            { name: "安徽新闻网", url: "http://anhui.cxwnet.cc/a/news/xinwen/2026/0102/34098.html", icon: "fas fa-globe-asia", search: "安徽新闻网 安徽 新闻 农业" },
+            { name: "江苏新闻网", url: "http://jiangsu.cxwnet.cc/a/news/xinwen/2026/0102/34064.html", icon: "fas fa-globe-asia", search: "江苏新闻网 江苏 新闻 农业" },
+            { name: "浙江新闻网", url: "http://zhejiang.cxwnet.cc/a/news/xinwen/2026/0102/33857.html", icon: "fas fa-globe-asia", search: "浙江新闻网 浙江 新闻 农业" },
+            { name: "辽宁新闻网", url: "http://liaoning.cxwnet.cc/a/news/xinwen/2026/0102/33754.html", icon: "fas fa-globe-asia", search: "辽宁新闻网 辽宁 新闻 农业" }
+        ];
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化链接
+            initLinks();
+            
+            // 夜间模式切换
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.className = 'fas fa-sun';
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i> 日间';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    icon.className = 'fas fa-moon';
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i> 夜间';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // 检查保存的主题设置
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> 日间';
+            }
+
+            // 实时搜索功能
+            const searchBox = document.getElementById('searchBox');
+            searchBox.addEventListener('input', function() {
+                performSearch(this.value.trim());
+            });
+
+            // 快速添加功能
+            document.getElementById('addBtn').addEventListener('click', function() {
+                if (/micromessenger/i.test(navigator.userAgent)) {
+                    alert('在微信中，您可以长按链接选择"复制链接地址"，然后手动保存。');
+                    return;
+                }
+                
+                const url = prompt('请输入链接地址:');
+                if (!url) return;
+                
+                const name = prompt('请输入网站名称:') || '新链接';
+                const tags = prompt('请输入搜索标签(用空格分隔):') || '';
+                
+                // 添加新链接
+                addNewLink(name, url, tags);
+            });
+
+            // 初始化统计
+            updateStats();
+        });
+
+        // 初始化链接
+        function initLinks() {
+            const container = document.getElementById('linksContainer');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // 检查是否有自定义链接
+            const customLinks = JSON.parse(localStorage.getItem('customLinks') || '[]');
+            const allLinks = [...linksData, ...customLinks];
+            
+            allLinks.forEach(link => {
+                const linkElement = createLinkElement(link);
+                container.appendChild(linkElement);
+            });
+            
+            updateStats();
+        }
+
+        // 创建链接元素
+        function createLinkElement(link) {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.className = 'link-item';
+            a.target = '_blank';
+            a.setAttribute('data-search', link.search || '');
+            
+            const hostname = getHostname(link.url);
+            
+            a.innerHTML = `
+                <div class="link-icon">
+                    <i class="${link.icon}"></i>
+                </div>
+                <div class="link-text">
+                    <strong>${link.name}</strong>
+                    <div class="link-url">${hostname}</div>
+                </div>
+            `;
+            
+            return a;
+        }
+
+        // 获取主机名
+        function getHostname(url) {
+            try {
+                return new URL(url).hostname.replace('www.', '');
+            } catch (e) {
+                return url;
+            }
+        }
+
+        // 执行搜索
+        function performSearch(term) {
+            const searchTerm = term.toLowerCase();
+            const allLinks = document.querySelectorAll('.link-item');
+            const noResults = document.getElementById('noResults');
+            let visibleCount = 0;
+
+            if (searchTerm === '') {
+                allLinks.forEach(link => {
+                    link.style.display = 'flex';
+                });
+                noResults.style.display = 'none';
+                updateStats();
+                return;
+            }
+
+            allLinks.forEach(link => {
+                const searchData = link.getAttribute('data-search').toLowerCase();
+                const linkText = link.querySelector('strong').textContent.toLowerCase();
+                const linkUrl = link.querySelector('.link-url').textContent.toLowerCase();
+                
+                const isVisible = searchData.includes(searchTerm) || 
+                                 linkText.includes(searchTerm) || 
+                                 linkUrl.includes(searchTerm);
+                
+                if (isVisible) {
+                    link.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    link.style.display = 'none';
+                }
+            });
+
+            // 显示无结果提示
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+                noResults.innerHTML = `没有找到与 "<strong>${term}</strong>" 相关的链接`;
+            } else {
+                noResults.style.display = 'none';
+            }
+
+            updateStats();
+        }
+
+        // 添加新链接
+        function addNewLink(name, url, tags) {
+            try {
+                // 验证URL
+                new URL(url);
+                
+                const customLinks = JSON.parse(localStorage.getItem('customLinks') || '[]');
+                const newLink = {
+                    name: name,
+                    url: url,
+                    icon: 'fas fa-link',
+                    search: tags + ' ' + name + ' ' + getHostname(url)
+                };
+                
+                customLinks.push(newLink);
+                localStorage.setItem('customLinks', JSON.stringify(customLinks));
+                
+                // 重新初始化链接
+                initLinks();
+                
+                // 提示用户
+                alert('链接添加成功！');
+            } catch (error) {
+                alert('无效的URL地址，请检查后重试。');
+            }
+        }
+
+        // 更新统计
+        function updateStats() {
+            const allLinks = document.querySelectorAll('.link-item');
+            const visibleLinks = Array.from(allLinks).filter(link => 
+                link.style.display !== 'none'
+            );
+            
+            document.getElementById('totalCount').textContent = 
+                visibleLinks.length > 0 ? visibleLinks.length : allLinks.length;
+            
+            // 更新日期
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('updateDate').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+    </script>
+</body>
+</html>
